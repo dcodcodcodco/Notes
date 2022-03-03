@@ -21,7 +21,7 @@ class ListNotesViewController: UIViewController {
     private var allNotes: [Note] = [] {
         didSet {
             notesCount.text = "\(allNotes.count) \(allNotes.count == 1 ? "Note" : "Notes")"
-            filteredNotes = allNotes // тут 
+            filteredNotes = allNotes
         }
     }
     
@@ -33,6 +33,7 @@ class ListNotesViewController: UIViewController {
         self.navigationController?.navigationBar.shadowImage = UIImage()
         tableView.contentInset = .init(top: 0, left: 0, bottom: 30, right: 0)
         configureSearchBar()
+        fetchNotesFromStorage()
     }
     
     private func indexForNote(id: UUID, in list: [Note]) -> IndexPath {
@@ -59,8 +60,7 @@ class ListNotesViewController: UIViewController {
     }
     
     private func createNote() -> Note {
-        let note = Note()
-        
+        let note = CoreDataManager.shared.createNote()
         // обновление интерфейса
         allNotes.insert(note, at: 0)
         tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
@@ -69,19 +69,21 @@ class ListNotesViewController: UIViewController {
     }
 
     private func fetchNotesFromStorage() {
-        print("")
+        allNotes = CoreDataManager.shared.fetchNotes()
     }
     
     private func deleteNoteFromStorage(_ note: Note) {
-        print("")
+        deleteNote(with: note.id)
+        CoreDataManager.shared.deleteNote(note)
     }
     
     private func searchNotesFromStorage(_ text: String) {
-        print("")
+        allNotes = CoreDataManager.shared.fetchNotes(filter: text) // широкий поиск по примерному значению
+        tableView.reloadData()
     }
 }
 
-// MARK - TableView Configuration
+// MARK: TableView Configuration
 extension ListNotesViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredNotes.count
@@ -97,7 +99,7 @@ extension ListNotesViewController: UITableViewDataSource, UITableViewDelegate {
         goToEditNote(filteredNotes[indexPath.row])
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) { // удаление свайпом влево
         if editingStyle == .delete {
             deleteNoteFromStorage(filteredNotes[indexPath.row])
         }
@@ -108,7 +110,7 @@ extension ListNotesViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-// MARK - Search Controller Configuration
+// MARK: Search Controller Configuration
 extension ListNotesViewController: UISearchControllerDelegate, UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
@@ -126,7 +128,7 @@ extension ListNotesViewController: UISearchControllerDelegate, UISearchBarDelega
     
     func search(_ query: String) {
         if query.count >= 1 {
-            filteredNotes = allNotes.filter { $0.text.lowercased().contains(query.lowercased()) }
+            filteredNotes = allNotes.filter { $0.text.lowercased().contains(query.lowercased()) } // поиск по точному запросу
         } else {
             filteredNotes = allNotes
         }
@@ -135,7 +137,7 @@ extension ListNotesViewController: UISearchControllerDelegate, UISearchBarDelega
     }
 }
 
-// MARK - ListNotes Delegate
+// MARK: ListNotes Delegate
 extension ListNotesViewController: ListNotesDelegate {
     
     func refreshNotes() {

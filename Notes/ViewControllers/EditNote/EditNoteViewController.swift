@@ -31,27 +31,22 @@ class EditNoteViewController: UIViewController {
     }
     
     private func updateNote() {
-        
-        print("")
-        
         note.lastUpdated = Date()
+        CoreDataManager.shared.save()
         delegate?.refreshNotes()
     }
     
     private func deleteNote() {
-        
-        print("")
-        
-        
         delegate?.deleteNote(with: note.id)
+        CoreDataManager.shared.deleteNote(note)
     }
 }
 
-// MARK - UITextView Delegate
+// MARK: UITextView Delegate
 extension EditNoteViewController: UITextViewDelegate {
-    func textViewDidEndEditing(_ textView: UITextView) {
+    func textViewDidEndEditing(_ textView: UITextView) { // запускается при остановке редактирования заметки
         note?.text = textView.text
-        if note?.title.isEmpty ?? true {
+        if note?.title.isEmpty ?? true { // если заметка пустая , то
             deleteNote()
         } else {
             updateNote()
