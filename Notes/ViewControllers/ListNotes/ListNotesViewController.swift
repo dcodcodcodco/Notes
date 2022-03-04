@@ -30,6 +30,8 @@ class ListNotesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        createTempData()
+        
         self.navigationController?.navigationBar.shadowImage = UIImage()
         tableView.contentInset = .init(top: 0, left: 0, bottom: 30, right: 0)
         configureSearchBar()
@@ -66,6 +68,12 @@ class ListNotesViewController: UIViewController {
         tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
         
         return note
+    }
+    
+    private func createTempData() {
+        TempData.shared.createTempData {
+            self.tableView.reloadData()
+        }
     }
 
     private func fetchNotesFromStorage() {
@@ -132,7 +140,6 @@ extension ListNotesViewController: UISearchControllerDelegate, UISearchBarDelega
         } else {
             filteredNotes = allNotes
         }
-        
         tableView.reloadData()
     }
 }
