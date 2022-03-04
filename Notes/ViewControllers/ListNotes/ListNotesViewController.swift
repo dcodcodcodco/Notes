@@ -126,7 +126,8 @@ extension ListNotesViewController: UISearchControllerDelegate, UISearchBarDelega
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        search("")
+        allNotes = CoreDataManager.shared.fetchNotes()
+        tableView.reloadData()
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
